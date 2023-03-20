@@ -18,7 +18,7 @@ jobs:
       - name: Get PR SHA
         id: get_pr_sha
         run: |
-          pr_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
+          pr_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH") $(git log --format=%B -n 1 ${{github.event.after}})
           echo "pr_sha=`echo ${pr_sha} | cut -c1-8`" >> $GITHUB_OUTPUT
           echo $pr_sha
 
@@ -31,6 +31,12 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
           username: ${{ secrets.PG_USERNAME }}
           password: ${{ secrets.PG_PASSWORD }}
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Neon branch created successfully :elephant: : https://console.neon.tech/app/projects/${{ NEON_PROJECT_ID }}/branches/${{ steps.create_branch.outputs.branch_id }}
 
       - name: Run Prisma Migrate
         env:
