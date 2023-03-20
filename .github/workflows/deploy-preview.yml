@@ -15,23 +15,19 @@ jobs:
           fetch-depth: 0
           ref: ${{github.event.after}}
 
-      - name: Get Commit Message
-        id: get_pr_commit_message
-        run: |
-          echo commit_message=$(git log --format=%B -n 1 ${{github.event.after}}) >> $GITHUB_OUTPUT
-
-      - name: Get PR SHA
+      - name: Get PR commit SHA
         id: get_pr_commit_sha
         run: |
-          calculatedSha=$(git rev-parse --short ${{ github.sha }})
-          echo short_sha=$calculatedSha >> $GITHUB_OUTPUT
+          pr_commit_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
+          echo "pr_commit_sha=$("${{ pr_commit_sha }}".SubString(0, 8))" >> $GITHUB_OUTPUT
+          echo $pr_commit_sha
 
       - name: Create Branch
         uses: neondatabase/create-branch-action@v2
         id: create_branch
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
-          branch_name: ${{ steps.get_pr_commit_sha.short_sha}} ${{steps.get_pr_commit_message.outputs.commit_message}}
+          branch_name: ${{steps.get_pr_commit_sha.outputs.pr_commit_sha}}
           api_key: ${{ secrets.NEON_API_KEY }}
           username: ${{ secrets.PG_USERNAME }}
           password: ${{ secrets.PG_PASSWORD }}
