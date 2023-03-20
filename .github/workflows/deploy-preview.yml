@@ -48,6 +48,7 @@ jobs:
   # If migration fails, exit workflow?
 
   Deploy-Preview:
+    needs: create_neon_branch
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
