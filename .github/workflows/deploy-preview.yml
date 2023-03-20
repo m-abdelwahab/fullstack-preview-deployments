@@ -24,7 +24,7 @@ jobs:
         id: get_pr_commit_sha
         run: |
           calculatedSha=$(git rev-parse --short ${{ github.sha }})
-          echo "::set-output name=short_sha::$calculatedSha"
+          echo short_sha=$calculatedSha >> $GITHUB_OUTPUT
 
       - name: Create Branch
         uses: neondatabase/create-branch-action@v2
