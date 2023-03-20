@@ -18,8 +18,7 @@ jobs:
       - name: Get Commit Message
         id: get_pr_commit_message
         run: |
-          MSG=$(git log --format=%B -n 1 ${{github.event.after}})
-          echo "::set-env name=commit_message::${MSG}"
+          echo commit_message=$(git log --format=%B -n 1 ${{github.event.after}})
 
       - name: Get PR number
         id: get_pull_number
