@@ -19,7 +19,7 @@ jobs:
         id: get_pr_sha
         run: |
           pr_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
-          echo "pr_sha=${pr_sha}.SubString(0, 8)" >> $GITHUB_OUTPUT
+          echo "pr_sha=`echo ${pr_sha} | cut -c1-8`" >> $GITHUB_OUTPUT
           echo $pr_sha
 
       - name: Create Branch
