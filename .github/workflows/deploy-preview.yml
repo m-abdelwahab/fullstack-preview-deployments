@@ -18,7 +18,7 @@ jobs:
       - name: Get PR SHA
         id: get_pr_sha
         run: |
-          pr_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH") $(git log --format=%B -n 1 ${{github.event.after}})
+          pr_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
           echo "pr_sha=`echo ${pr_sha} | cut -c1-8`" >> $GITHUB_OUTPUT
           echo $pr_sha
 
