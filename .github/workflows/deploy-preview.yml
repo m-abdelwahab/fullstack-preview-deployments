@@ -3,8 +3,7 @@ name: Deploy Preview
 on: [pull_request]
 
 jobs:
-  Create-Neon-Branch:
-    id: create_neon_branch
+  create_neon_branch:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
