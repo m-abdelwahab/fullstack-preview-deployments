@@ -36,7 +36,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Neon branch created successfully :elephant: : https://console.neon.tech/app/projects/${{ NEON_PROJECT_ID }}/branches/${{ steps.create_branch.outputs.branch_id }}
+            Neon branch created successfully :elephant: : https://console.neon.tech/app/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${{ steps.create_branch.outputs.branch_id }}
 
       - name: Run Prisma Migrate
         env:
