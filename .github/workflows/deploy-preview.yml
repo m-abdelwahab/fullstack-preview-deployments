@@ -3,10 +3,11 @@ name: Deploy Preview
 on: [pull_request]
 
 jobs:
-  Create-Neon-Branch:
-    id: create_neon_branch
+  create_neon_branch:
     permissions: write-all
     runs-on: ubuntu-latest
+    outputs:
+      db_url: ${{ steps.create_branch.outputs.db_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -14,38 +15,27 @@ jobs:
           fetch-depth: 0
           ref: ${{github.event.after}}
 
-      - name: Get Commit Message
-        id: get_pr_commit_message
+      - name: Get PR commit SHA
+        id: get_pr_commit_sha
         run: |
-          MSG=$(git log --format=%B -n 1 ${{github.event.after}})
-          echo "::set-env name=commit_message::${MSG}"
-
-      - name: Get PR number
-        id: get_pull_number
-        run: |
-          pull_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
-          echo "pull_sha=${pull_sha}" >> $GITHUB_OUTPUT
-          echo $pull_sha
+          pr_commit_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
+          echo "pr_commit_sha=$("${{ pr_commit_sha }}".SubString(0, 8))" >> $GITHUB_OUTPUT
+          echo $pr_commit_sha
 
       - name: Create Branch
         uses: neondatabase/create-branch-action@v2
+        id: create_branch
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
-          branch_name: ${{steps.get_pr_commit_message.outputs.commit_message}}
+          branch_name: ${{steps.get_pr_commit_sha.outputs.pr_commit_sha}}
           api_key: ${{ secrets.NEON_API_KEY }}
           username: ${{ secrets.PG_USERNAME }}
           password: ${{ secrets.PG_PASSWORD }}
 
-  Run-Migrations:
-    permissions: write-all
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Run Prisma Migrate
         env:
-          DATABASE_URL: ${{ jobs.create_neon_branch.outputs.db_url}}/neondb
-          DIRECT_DATABASE_URL: ${{ jobs.create_neon_branch.outputs.db_url}}/neondb
+          DATABASE_URL: ${{ steps.create_branch.outputs.db_url}}/neondb
+          DIRECT_DATABASE_URL: ${{ steps.create_branch.outputs.db_url}}/neondb
         run: |
           touch .env
           echo DIRECT_DATABASE_URL=${DIRECT_DATABASE_URL} >> .env
@@ -55,10 +45,13 @@ jobs:
 
   # If migration fails, exit workflow?
 
-  Deploy-Preview:
+  deploy-preview:
+    needs: create_neon_branch
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Deploy to Vercel
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -74,5 +67,4 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Neon Branch Host :elephant: : ${{ jobs.create_neon_branch.outputs.host }}
             Vercel Preview URL :rocket: : ${{ steps.deploy.outputs.preview_url }}

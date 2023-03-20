@@ -47,7 +47,7 @@
 #             --header "Content-Type: application/json" \
 #             --header "Authorization: Bearer ${API_KEY}" \
 #             | jq -r .branches \
-#             | jq -c '.[] | select(.name | contains("'${SHA}'")) .id' \
+#             | jq -c '.[] | select(.name | contains("'${{ github.event.head_commit.message }}'")) .id' \
 #             | jq -r \
 #             ) \
 
