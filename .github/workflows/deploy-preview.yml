@@ -46,8 +46,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Run Prisma Migrate
         env:
-          DATABASE_URL: ${{ jobs.create_neon_branch.outputs.db_url}}/neondb
-          DIRECT_DATABASE_URL: ${{ jobs.create_neon_branch.outputs.db_url}}/neondb
+          DATABASE_URL: ${{ needs.create_neon_branch.outputs.db_url}}/neondb
+          DIRECT_DATABASE_URL: ${{ needs.create_neon_branch.outputs.db_url}}/neondb
         run: |
           touch .env
           echo DIRECT_DATABASE_URL=${DIRECT_DATABASE_URL} >> .env
