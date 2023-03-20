@@ -6,6 +6,8 @@ jobs:
   create_neon_branch:
     permissions: write-all
     runs-on: ubuntu-latest
+    outputs:
+      db_url: ${{ steps.create_branch.outputs.db_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -28,6 +30,7 @@ jobs:
 
       - name: Create Branch
         uses: neondatabase/create-branch-action@v2
+        id: create_branch
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: ${{steps.get_pr_commit_message.outputs.commit_message}}
