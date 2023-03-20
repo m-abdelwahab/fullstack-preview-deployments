@@ -1,3 +1,3 @@
-# Test 3
+# Test 4
 
-This is another commit, will it rerun the workflow?
+get the first commit message and use it as a title
