@@ -37,16 +37,10 @@ jobs:
           username: ${{ secrets.PG_USERNAME }}
           password: ${{ secrets.PG_PASSWORD }}
 
-  Run-Migrations:
-    permissions: write-all
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Run Prisma Migrate
         env:
-          DATABASE_URL: ${{ needs.create_neon_branch.outputs.db_url}}/neondb
-          DIRECT_DATABASE_URL: ${{ needs.create_neon_branch.outputs.db_url}}/neondb
+          DATABASE_URL: ${{ steps.create_branch.outputs.db_url}}/neondb
+          DIRECT_DATABASE_URL: ${{ steps.create_branch.outputs.db_url}}/neondb
         run: |
           touch .env
           echo DIRECT_DATABASE_URL=${DIRECT_DATABASE_URL} >> .env
