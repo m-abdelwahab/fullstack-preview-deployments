@@ -1,0 +1,77 @@
+name: Deploy Preview
+
+on: [pull_request]
+
+jobs:
+  Create-Neon-Branch:
+    id: create-neon-branch
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{github.event.after}}
+
+      - name: Get Commit Message
+        id: get_pr_commit_message
+        run: |
+          MSG=$(git log --format=%B -n 1 ${{github.event.after}})
+          echo "::set-env name=commit_message::${MSG}"
+
+      - name: Get PR number
+        id: get_pull_number
+        run: |
+          pull_sha=$(jq --raw-output .pull_request.base.sha "$GITHUB_EVENT_PATH")
+          echo "pull_sha=${pull_sha}" >> $GITHUB_OUTPUT
+          echo $pull_sha
+
+      - name: Create Branch
+        uses: neondatabase/create-branch-action@v2
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch_name: ${{steps.get_pr_commit_message.outputs.commit_message}}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          username: ${{ secrets.PGUSERNAME }}
+          password: ${{ secrets.PGPASSWORD }}
+
+  Run-Migrations:
+    id: run-migrations
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Prisma Migrate
+        env:
+          DATABASE_URL: ${{ jobs.create-neon-branch.outputs.db_url}}/neondb
+          DIRECT_DATABASE_URL: ${{ jobs.create-neon-branch.outputs.db_url}}/neondb
+        run: |
+          touch .env
+          echo DIRECT_DATABASE_URL=${DIRECT_DATABASE_URL} >> .env
+          echo DATABASE_URL=${DATABASE_URL} >> .env
+          npx prisma generate
+          npx prisma migrate deploy
+
+  Deploy-Preview:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Vercel
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npm install --global vercel@latest
+          vercel pull --yes --environment=preview --token=${VERCEL_TOKEN}
+          vercel build --token=${VERCEL_TOKEN}
+          preview_url=$(vercel deploy --prebuilt --token=${VERCEL_TOKEN})
+          echo "preview_url=${preview_url}" >> $GITHUB_OUTPUT
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Neon Branch Host :elephant: : ${{ jobs.create-neon-branch.outputs.host }}
+            Vercel Preview URL :rocket: : ${{ steps.deploy.outputs.preview_url }}
