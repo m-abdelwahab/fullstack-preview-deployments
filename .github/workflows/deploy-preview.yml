@@ -22,7 +22,9 @@ jobs:
 
       - name: Get PR SHA
         id: get_pr_commit_sha
-        run: echo "short_sha=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "::set-output name=short_sha::$calculatedSha"
 
       - name: Create Branch
         uses: neondatabase/create-branch-action@v2
@@ -47,7 +49,7 @@ jobs:
 
   # If migration fails, exit workflow?
 
-  Deploy-Preview:
+  deploy-preview:
     needs: create_neon_branch
     permissions: write-all
     runs-on: ubuntu-latest
