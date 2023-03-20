@@ -1,3 +1,2 @@
-# Test 4
+# Test 6
 
-get the first commit message and use it as a title
