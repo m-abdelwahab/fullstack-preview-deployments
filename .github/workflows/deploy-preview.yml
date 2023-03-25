@@ -10,7 +10,6 @@ env:
   NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
   PG_USERNAME: ${{ secrets.PG_USERNAME }}
   PG_PASSWORD: ${{ secrets.PG_PASSWORD }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   deploy-preview:

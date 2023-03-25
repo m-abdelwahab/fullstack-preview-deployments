@@ -11,7 +11,7 @@ env:
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
   NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
       - name: Get PR info
         id: get-pr-info
         with:
-          github_token: ${GITHUB_TOKEN}
+          github_token: ${GH_TOKEN}
         uses: actions-ecosystem/action-get-merged-pull-request@v1.0.1
       - run: echo ${{ steps.get-pr-info.outputs.number}}
 
